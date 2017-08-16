@@ -7,4 +7,4 @@ russell :: Set x
 russell = Set (\(Set f) -> not $ f (Set f))
 
 main :: IO ()
-main = print $ unSet russell (Set (const True))
+main = print $ unSet russell russell
