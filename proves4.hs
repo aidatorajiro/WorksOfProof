@@ -20,8 +20,7 @@ commutativeLawAnd (p, q) = (q, p)
 
 -- 交換法則（または）
 commutativeLawOr :: Either p q -> Either q p
-commutativeLawOr (Left  p) = Right p
-commutativeLawOr (Right q) = Left  q
+commutativeLawOr = either Right Left
 
 -- 結合法則
 associativeLaw :: ((p -> q) -> r) -> (p -> (q -> r))
