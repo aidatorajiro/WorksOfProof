@@ -18,6 +18,7 @@ inversion H0.
 Qed.
 
 Proposition prop2 : forall (A : Type), [A] = [A].
+Proof.
 intros A.
 assert (~ [A]> [A]).
 intro H.
@@ -33,7 +34,9 @@ apply H.
 apply H.
 Qed.
 
+(*
 Proposition prop3 : [nat * nat] = [nat].
+Proof.
 split.
 intro H.
 assert (H0 := H (fun t => fst t)).
@@ -48,3 +51,4 @@ assert (H0 := H (fun n => pair n n)).
 case H0.
 intros x H1.
 assert (H2 := H1 (fst x)).
+*)
