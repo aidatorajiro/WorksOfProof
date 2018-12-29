@@ -1,5 +1,3 @@
-Require Import Classical.
-
 Proposition prop1 : forall (X : Type) (P : X -> X -> Prop) (f : nat -> X), (forall n : nat, P (f n) (f (n + 1))) -> (forall n : nat, P (f (n + 1)) (f (n + 2))).
 Proof.
 intros.
@@ -64,3 +62,4 @@ simpl in H4.
 apply (H0 (x 1)).
 apply H4.
 Qed.
+
