@@ -1,4 +1,8 @@
 Require Import Ensembles.
+Require Import Finite_sets.
+Require Import ClassicalChoice.
+Require Import Classical_Pred_Type.
+Require Import Classical_Prop.
 
 Arguments In {U}.
 Arguments Included {U}.
@@ -20,6 +24,17 @@ Arguments Empty_set {U}.
 Arguments Full_set {U}.
 
 Set Implicit Arguments.
+
+Inductive invertible {X Y:Type} (f:X->Y) : Prop :=
+  | intro_invertible: forall g:Y->X,
+  (forall x:X, g (f x) = x) -> (forall y:Y, f (g y) = y) ->
+  invertible f.
+
+Inductive FiniteT : Type -> Prop :=
+  | empty_finite: FiniteT False
+  | add_finite: forall T:Type, FiniteT T -> FiniteT (option T)
+  | bij_finite: forall (X Y:Type) (f:X->Y), FiniteT X ->
+    invertible f -> FiniteT Y.
 
 Section Families.
 
@@ -134,32 +149,295 @@ trivial.
 trivial.
 Qed.
 
-Lemma open_indexed_union: forall {X:TopologicalSpace} {A:Type}
-  (F:IndexedFamily A (point_set X)),
-  (forall a:A, open (F a)) -> open (IndexedUnion F).
-Proof.
+Lemma indexed_union_to_family_union: forall {A T:Type}  (F:IndexedFamily A T),
+    IndexedUnion F = FamilyUnion (fun u => exists a:A, F a = u).
 intros.
-assert (IndexedUnion F = FamilyUnion (fun u => exists a:A, F a = u)).
 apply Extensionality_Ensembles.
 unfold Same_set.
 unfold Included.
 constructor.
 intros.
-induction H0.
-apply (family_union_intro (fun u : Ensemble (point_set X) => exists a0 : A, F a0 = u) (F a)).
+induction H.
+apply (family_union_intro (fun u : Ensemble T => exists a0 : A, F a0 = u) (F a)).
 exists a.
 reflexivity.
 trivial.
 intros.
-induction H0.
-destruct H0.
+induction H.
+destruct H.
 apply (indexed_union_intro F x0).
-rewrite H0.
+rewrite H.
 trivial.
-rewrite H0.
+Qed.
+
+Lemma open_indexed_union: forall {X:TopologicalSpace} {A:Type}
+  (F:IndexedFamily A (point_set X)),
+  (forall a:A, open (F a)) -> open (IndexedUnion F).
+Proof.
+intros.
+rewrite indexed_union_to_family_union.
 apply open_family_union.
 intros.
-destruct H1.
-rewrite <- H1.
+destruct H0.
+rewrite <- H0.
 apply (H x).
+Qed.
+
+Lemma open_finite_indexed_intersection:
+  forall {X:TopologicalSpace} {A:Type}
+    (F:IndexedFamily A (point_set X)),
+    FiniteT A -> (forall a:A, open (F a)) ->
+    open (IndexedIntersection F).
+Proof.
+intros.
+induction H.
+assert (IndexedIntersection F = Full_set).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+apply Full_intro.
+intros.
+constructor.
+intro.
+contradiction.
+rewrite H.
+apply open_full.
+assert(IndexedIntersection F = Intersection (F None) (IndexedIntersection (fun x : T => F (Some x)))).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+induction H1.
+apply Intersection_intro.
+apply H1.
+constructor.
+intros.
+apply H1.
+intros.
+induction H1.
+induction H2.
+constructor.
+intro.
+induction a.
+apply H2.
+apply H1.
+rewrite H1.
+apply open_intersection2.
+apply H0.
+apply (IHFiniteT (fun x => F (Some x)) (fun x => H0 (Some (x)))).
+induction H1.
+assert(IndexedIntersection F = IndexedIntersection (fun x : X0 => F (f x))).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+induction H3.
+constructor.
+intro.
+apply H3.
+intros.
+induction H3.
+constructor.
+intro.
+assert (H4 := H3 (g a)).
+rewrite (H2 a) in H4.
+trivial.
+rewrite H3.
+apply IHFiniteT.
+intros.
+apply H0.
+Qed.
+
+Set Asymmetric Patterns.
+
+Definition compact (X:TopologicalSpace) :=
+  forall C:Family (point_set X),
+    (forall U:Ensemble (point_set X), In C U -> open U) ->
+    FamilyUnion C = Full_set ->
+    exists C':Family (point_set X),
+      Finite _ C' /\ Included C' C /\
+      FamilyUnion C' = Full_set.
+
+Lemma union_is_finite_strong:
+  forall (U:Type) (A:Ensemble U),
+        Finite U A -> forall x:U, Finite U (Add A x).
+Proof.
+intros.
+assert(H0 := classic (In A x)).
+destruct H0.
+assert (Add A x = A).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+destruct H1.
+apply H1.
+destruct H1.
+apply H0.
+intros.
+apply Union_introl.
+apply H1.
+rewrite H1.
+apply H.
+apply (Union_is_finite U A H x H0).
+Qed.
+
+Lemma sig_index_finite:
+  forall (A B : Type) (x : Family B), (Finite (Ensemble B) x) -> forall (f : {e | In x e} -> A), Finite A (fun i => exists e, f e = i).
+intros.
+induction H.
+assert ((fun i : A => exists e : {e : Ensemble B | In Empty_set e}, f e = i) = Empty_set).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+unfold In in H.
+destruct H.
+destruct x0.
+contradiction.
+intros.
+contradiction.
+rewrite H.
+apply Empty_is_finite.
+
+set (H1 := (Union_intror (Ensemble B) A0 (Singleton x) x) (In_singleton (Ensemble B) x)).
+
+set (H2 := (fun e h => Union_introl (Ensemble B) A0 (Singleton x) e h) : forall e, In A0 e -> In (Add A0 x) e).
+
+set (f' := (fun e : {e : Ensemble B | In A0 e} => f (exist (fun e => In (Add A0 x) e) (proj1_sig e) (H2 (proj1_sig e) (proj2_sig e))))).
+assert ((fun i : A => exists e : {e : Ensemble B | In (Add A0 x) e}, f e = i)
+   = Add (fun i : A => exists e : {e : Ensemble B | In A0 e}, f' e = i)
+      (f (exist (fun e => In (Add A0 x) e) x H1))).
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+unfold In in H3.
+destruct H3.
+destruct x1.
+destruct a.
+apply Union_introl.
+unfold In.
+exists (exist (fun e => A0 e) x1 i).
+unfold f'.
+simpl.
+apply H3.
+unfold In.
+apply Union_intror.
+unfold In.
+unfold H1.
+destruct i.
+rewrite H3.
+apply In_singleton.
+intros.
+
+destruct H3.
+
+destruct H3.
+destruct x1.
+unfold In.
+set (H4 := Union_introl (Ensemble B) A0 (Singleton x) x1 i).
+exists(exist (fun e => In (Add A0 x) e) x1 H4).
+apply H3.
+
+unfold In.
+exists (exist (fun e : Ensemble B => In (Add A0 x) e) x H1).
+destruct H3.
+reflexivity.
+
+rewrite H3.
+apply union_is_finite_strong.
+apply IHFinite.
+Qed.
+
+
+Lemma compactness_on_indexed_covers:
+  forall (X:TopologicalSpace) (A:Type) (C:IndexedFamily A (point_set X)),
+    compact X ->
+    (forall a:A, open (C a)) -> IndexedUnion C = Full_set ->
+  exists A':Ensemble A, Finite _ A' /\
+    IndexedUnion (fun a':{a':A | In A' a'} => C (proj1_sig a')) = Full_set.
+Proof.
+intros.
+unfold compact in H.
+unfold Included in H.
+rewrite (indexed_union_to_family_union C) in H1.
+
+assert (exists C' : Family (point_set X),
+      Finite (Ensemble (point_set X)) C' /\ Included C' (fun u : Ensemble (point_set X) => exists a : A, C a = u) /\ FamilyUnion C' = Full_set).
+apply H.
+intros.
+destruct H2.
+assert (H3 := H0 x).
+rewrite H2 in H3.
+apply H3.
+apply H1.
+
+destruct H2.
+destruct H2.
+destruct H3.
+unfold Included in H3.
+unfold In in H3.
+
+clear H.
+clear H0.
+
+assert (exists f : {e : Ensemble (point_set X) | In x e} -> A, (forall e : {e : Ensemble (point_set X) | In x e}, C (f e) = proj1_sig e)).
+apply (choice (fun (e :  {e : Ensemble (point_set X) | In x e}) (i : A) => C i = proj1_sig e)).
+intro.
+destruct x0.
+destruct (H3 x0).
+apply i.
+exists x1.
+simpl.
+apply H.
+destruct H.
+
+rename x0 into f.
+
+exists (fun i => exists e, f e = i).
+constructor.
+
+apply sig_index_finite.
+apply H2.
+
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+rewrite <- H1.
+destruct H0.
+destruct a.
+unfold proj1_sig in H0.
+apply (family_union_intro (fun u : Ensemble (point_set X) => exists a : A, C a = u) (C x1)).
+unfold In.
+exists x1.
+reflexivity.
+apply H0.
+intros.
+
+unfold In.
+rewrite <- H4 in H0.
+destruct H0.
+set (eS := exist (fun e => In x e) S H0).
+set (fS := f (eS)).
+assert (exists e, f e = fS).
+exists (eS).
+trivial.
+exists (exist (fun a' => exists e, f e = a') fS H6).
+unfold In.
+unfold proj1_sig.
+unfold fS.
+rewrite (H eS).
+unfold eS.
+unfold proj1_sig.
+apply H5.
 Qed.
