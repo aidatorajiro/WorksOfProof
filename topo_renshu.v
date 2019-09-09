@@ -262,6 +262,9 @@ Definition compact (X:TopologicalSpace) :=
       Finite _ C' /\ Included C' C /\
       FamilyUnion C' = Full_set.
 
+Definition closed {X:TopologicalSpace} (F:Ensemble (point_set X)) :=
+  open (Ensembles.Complement F).
+
 Lemma union_is_finite_strong:
   forall (U:Type) (A:Ensemble U),
         Finite U A -> forall x:U, Finite U (Add A x).
@@ -357,6 +360,208 @@ apply union_is_finite_strong.
 apply IHFinite.
 Qed.
 
+Lemma map_finite:
+  forall (X Y : Type) (A : Ensemble X) (F : X -> Y), Finite X A -> Finite Y (fun x => exists e : {e | In A e}, x = F (proj1_sig e)).
+Proof.
+intros.
+induction H.
+assert ((fun x : Y => exists e : {e : X | In Empty_set e}, x = F (proj1_sig e)) = Empty_set).
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H.
+destruct x0.
+contradiction.
+contradiction.
+rewrite H.
+constructor.
+
+assert ((fun x0 : Y => exists e : {e : X | In (Add A x) e}, x0 = F (proj1_sig e))
+  = Add (fun x0 : Y => exists e : {e : X | In A e}, x0 = F (proj1_sig e)) (F x)).
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H1.
+destruct x1.
+destruct i.
+unfold proj1_sig in H1.
+left.
+exists (exist _ x1 i).
+rewrite H1; reflexivity.
+unfold proj1_sig in H1.
+right.
+induction i.
+induction H1.
+constructor.
+
+induction H1.
+destruct H1.
+destruct x1.
+assert (In (Add A x) x1).
+left.
+apply i.
+exists (exist _ x1 H2).
+rewrite H1.
+reflexivity.
+assert (In (Add A x) x).
+right.
+constructor.
+exists (exist _ x H2).
+induction H1; reflexivity.
+
+rewrite H1.
+apply union_is_finite_strong.
+apply IHFinite.
+Qed.
+
+Lemma singleton_is_finite:
+  forall (X : Type) (a : X), Finite X (Singleton a).
+Proof.
+intros.
+assert (Singleton a = Add Empty_set a).
+apply Extensionality_Ensembles; constructor; red; intros.
+right.
+apply H.
+destruct H.
+contradiction.
+apply H.
+rewrite H.
+constructor.
+constructor.
+intro.
+contradiction.
+Qed.
+
+Lemma prop_finite:
+  forall (X : Type) (A : Ensemble X) (P : X -> Prop), Finite X A -> Finite X (fun x => P x /\ exists e : {e | In A e}, x = proj1_sig e).
+intros.
+induction H.
+assert ((fun x => P x /\ (exists e : {e : X | In Empty_set e}, x = proj1_sig e)) = Empty_set).
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H.
+destruct H0.
+destruct x0.
+contradiction.
+contradiction.
+rewrite H.
+constructor.
+
+destruct (classic (P x)).
+
+assert ((fun x0 : X => P x0 /\ (exists e : {e : X | In (Add A x) e}, x0 = proj1_sig e))
+  = Add (fun x0 : X =>P x0 /\ (exists e : {e : X | In A e}, x0 = proj1_sig e)) x).
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H2.
+destruct H3.
+destruct x1.
+destruct i.
+left.
+constructor.
+trivial.
+exists (exist _ x1 i).
+rewrite H3; reflexivity.
+right.
+rewrite i; rewrite H3; reflexivity.
+destruct H2.
+destruct H2.
+destruct H3.
+constructor.
+trivial.
+destruct x1.
+assert (In (Add A x) x1).
+left; apply i.
+exists (exist _ x1 H4).
+rewrite H3; reflexivity.
+destruct H2.
+red.
+constructor.
+trivial.
+assert (In (Add A x) x).
+right; constructor.
+exists (exist _ x H2); reflexivity.
+rewrite H2.
+apply union_is_finite_strong.
+apply IHFinite.
+
+assert ((fun x0 : X => P x0 /\ (exists e : {e : X | In (Add A x) e}, x0 = proj1_sig e))
+  = (fun x0 : X =>P x0 /\ (exists e : {e : X | In A e}, x0 = proj1_sig e))).
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H2.
+destruct H3.
+destruct x1.
+destruct i.
+constructor.
+trivial.
+exists (exist _ x1 i).
+rewrite H3; reflexivity.
+destruct i.
+rewrite H3 in H2; simpl in H2.
+contradiction.
+destruct H2.
+constructor.
+trivial.
+destruct H3.
+destruct x1.
+unfold proj1_sig in H3.
+destruct H3.
+assert (In (Add A x) x0).
+left; trivial.
+exists (exist _ x0 H3); reflexivity.
+rewrite H2; apply IHFinite.
+Qed.
+
+Lemma intersection_complement_complement_union:
+  forall (T : Type)(A : Family T), FamilyIntersection (fun x => exists e : {e | In A e}, x = Complement (proj1_sig e)) = Complement (FamilyUnion A).
+intros.
+apply Extensionality_Ensembles; constructor; red; intros.
+destruct H.
+intro.
+destruct H0.
+assert(In (Complement S) x).
+apply H.
+exists (exist _ S H0).
+simpl.
+reflexivity.
+contradiction.
+constructor.
+intros.
+destruct H0.
+destruct x0.
+simpl in H0.
+rewrite H0.
+intro.
+apply H.
+exists x0.
+trivial.
+trivial.
+Qed.
+
+Lemma complement_full_set_equal_empty_set :
+  forall (A : Type), Complement Full_set = (Empty_set : Ensemble A).
+intros.
+apply Extensionality_Ensembles; constructor; red; intros.
+unfold Complement in H.
+unfold In in H.
+destruct H.
+constructor.
+contradiction.
+Qed.
+
+Lemma complement_empty_set_equal_full_set :
+  forall (A : Type), Complement Empty_set = (Full_set : Ensemble A).
+intros.
+apply Extensionality_Ensembles; constructor; red; intros.
+constructor.
+intro.
+contradiction.
+Qed.
+
+Lemma complement_complement_x_equal_x :
+  forall (A : Type) (x : Ensemble A), Complement (Complement x) = x.
+Proof.
+intros.
+apply Extensionality_Ensembles; constructor; red; intros.
+unfold Complement in H.
+unfold In in H.
+apply (NNPP _ H).
+assert (~ ~ In x x0); intro; contradiction.
+Qed.
 
 Lemma compactness_on_indexed_covers:
   forall (X:TopologicalSpace) (A:Type) (C:IndexedFamily A (point_set X)),
@@ -441,3 +646,104 @@ unfold eS.
 unfold proj1_sig.
 apply H5.
 Qed.
+
+
+Lemma compact_finite_nonempty_closed_intersection:
+  forall X:TopologicalSpace, compact X ->
+  forall F:Family (point_set X),
+    (forall G:Ensemble (point_set X), In F G -> closed G) ->
+    (forall F':Family (point_set X), Finite _ F' -> Included F' F ->
+     Inhabited (FamilyIntersection F')) ->
+    Inhabited (FamilyIntersection F).
+Proof.
+intros X Hcompact F  Hclosed Hinhabited.
+set (Fc := (fun x => exists e : {e | In F e}, x = Complement (proj1_sig e))).
+assert (FamilyUnion Fc <> Full_set).
+intro.
+rename H into union_full.
+unfold compact in Hcompact.
+
+assert (exists C' : Family (point_set X),
+             Finite (Ensemble (point_set X)) C' /\
+             Included C' Fc /\ FamilyUnion C' = Full_set).
+apply Hcompact.
+intros.
+destruct H.
+destruct x.
+rewrite H.
+apply (Hclosed x i).
+apply union_full.
+destruct H.
+destruct H.
+destruct H0.
+rename x into Fc'.
+rename H into Finite_Fc'.
+rename H0 into Included_Fc'.
+rename H1 into Full_Fc'.
+set (F' := (fun x => exists e : {e | In Fc' e}, x = Complement (proj1_sig e))).
+assert (Finite_F' : Finite _ F').
+apply map_finite.
+trivial.
+assert (Included F' F).
+intro.
+intro.
+destruct H.
+destruct x0.
+simpl in H.
+assert (H0 := Included_Fc' _ i).
+destruct H0.
+destruct x1.
+simpl in H0.
+rewrite H0 in H.
+rewrite (complement_complement_x_equal_x) in H.
+rewrite H.
+apply i0.
+rename H into Included_F'.
+assert (H := Hinhabited _ Finite_F' Included_F').
+unfold F' in H.
+rewrite intersection_complement_complement_union in H.
+rewrite Full_Fc' in H.
+rewrite complement_full_set_equal_empty_set in H.
+destruct H.
+contradiction.
+
+apply NNPP.
+intro.
+assert (FamilyIntersection F = Empty_set).
+apply Extensionality_Ensembles; constructor; red; intros.
+assert (Inhabited (FamilyIntersection F)).
+exists x.
+trivial.
+contradiction.
+contradiction.
+
+apply H.
+rewrite <- complement_empty_set_equal_full_set.
+rewrite <- H1.
+
+
+assert (~ (exists x, forall S, In F S -> In S x)).
+
+assert (FamilyUnion Fc = Full_set).
+apply Extensionality_Ensembles; constructor; red; intros.
+constructor.
+
+rewrite <- complement_empty_set_equal_full_set.
+rewrite <- H1.
+apply Extensionality_Ensembles; constructor; red; intros.
+intro.
+rewrite H1 in  H3.
+contradiction.
+unfold In, Complement  in H2.
+apply NNPP.
+intro.
+apply H2.
+constructor.
+intros.
+destruct H3.
+exists (Complement S).
+unfold Fc.
+unfold In.
+exists (exist _ S H4).
+simpl.
+reflexivity.

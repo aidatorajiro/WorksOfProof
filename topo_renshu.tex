@@ -1,0 +1,262 @@
+\documentclass[12pt]{report}
+\usepackage[]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fullpage}
+\usepackage{coqdoc}
+\usepackage{amsmath,amssymb}
+\usepackage{url}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This file has been automatically generated with the command
+%% coqdoc -q -g --latex -o topo_renshu.tex topo_renshu.v 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\coqlibrary{topo renshu}{Library }{topo\_renshu}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Require} \coqdockw{Import} \coqdocvar{Ensembles}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Require} \coqdockw{Import} \coqdocvar{Finite\_sets}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Require} \coqdockw{Import} \coqdocvar{ClassicalChoice}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Require} \coqdockw{Import} \coqdocvar{Classical\_Pred\_Type}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Require} \coqdockw{Import} \coqdocvar{Classical\_Prop}.\coqdoceol
+\coqdocemptyline
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Set Implicit Arguments}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{invertible} \{\coqdocvar{X} \coqdocvar{Y}:\coqdockw{Type}\} (\coqdocvar{f}:\coqdocvar{X}\ensuremath{\rightarrow}\coqdocvar{Y}) : \coqdockw{Prop} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{intro\_invertible}: \coqdockw{\ensuremath{\forall}} \coqdocvar{g}:\coqdocvar{Y}\ensuremath{\rightarrow}\coqdocvar{X},\coqdoceol
+\coqdocindent{1.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{x}:\coqdocvar{X}, \coqdocvar{g} (\coqdocvar{f} \coqdocvar{x}) = \coqdocvar{x}) \ensuremath{\rightarrow} (\coqdockw{\ensuremath{\forall}} \coqdocvar{y}:\coqdocvar{Y}, \coqdocvar{f} (\coqdocvar{g} \coqdocvar{y}) = \coqdocvar{y}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{invertible} \coqdocvar{f}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{FiniteT} : \coqdockw{Type} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{empty\_finite}: \coqdocvar{FiniteT} \coqdocvar{False}\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{add\_finite}: \coqdockw{\ensuremath{\forall}} \coqdocvar{T}:\coqdockw{Type}, \coqdocvar{FiniteT} \coqdocvar{T} \ensuremath{\rightarrow} \coqdocvar{FiniteT} (\coqdocvar{option} \coqdocvar{T})\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{bij\_finite}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{X} \coqdocvar{Y}:\coqdockw{Type}) (\coqdocvar{f}:\coqdocvar{X}\ensuremath{\rightarrow}\coqdocvar{Y}), \coqdocvar{FiniteT} \coqdocvar{X} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{invertible} \coqdocvar{f} \ensuremath{\rightarrow} \coqdocvar{FiniteT} \coqdocvar{Y}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Section} \coqdocvar{Families}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Variable} \coqdocvar{T}:\coqdockw{Type}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{Family} := \coqdocvar{Ensemble} (\coqdocvar{Ensemble} \coqdocvar{T}).\coqdoceol
+\coqdocnoindent
+\coqdockw{Variable} \coqdocvar{F}:\coqdocvar{Family}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{FamilyUnion}: \coqdocvar{Ensemble} \coqdocvar{T} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{family\_union\_intro}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{S}:\coqdocvar{Ensemble} \coqdocvar{T}) (\coqdocvar{x}:\coqdocvar{T}),\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{In} \coqdocvar{F} \coqdocvar{S} \ensuremath{\rightarrow} \coqdocvar{In} \coqdocvar{S} \coqdocvar{x} \ensuremath{\rightarrow} \coqdocvar{In} \coqdocvar{FamilyUnion} \coqdocvar{x}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{FamilyIntersection}: \coqdocvar{Ensemble} \coqdocvar{T} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{family\_intersection\_intro}: \coqdockw{\ensuremath{\forall}} \coqdocvar{x}:\coqdocvar{T},\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{S}:\coqdocvar{Ensemble} \coqdocvar{T}, \coqdocvar{In} \coqdocvar{F} \coqdocvar{S} \ensuremath{\rightarrow} \coqdocvar{In} \coqdocvar{S} \coqdocvar{x}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{In} \coqdocvar{FamilyIntersection} \coqdocvar{x}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{End} \coqdocvar{Families}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Section} \coqdocvar{FamiliesFact}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Variable} \coqdocvar{T}:\coqdockw{Type}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{empty\_family\_union}: \coqdocvar{FamilyUnion} (@\coqdocvar{Empty\_set} (\coqdocvar{Ensemble} \coqdocvar{T})) =\coqdoceol
+\coqdocindent{13.00em}
+\coqdocvar{Empty\_set}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{End} \coqdocvar{FamiliesFact}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Section} \coqdocvar{IndexedFamilies}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Variable} \coqdocvar{A} \coqdocvar{T}:\coqdockw{Type}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{IndexedFamily} := \coqdocvar{A} \ensuremath{\rightarrow} \coqdocvar{Ensemble} \coqdocvar{T}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Variable} \coqdocvar{F}:\coqdocvar{IndexedFamily}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{IndexedUnion} : \coqdocvar{Ensemble} \coqdocvar{T} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{indexed\_union\_intro}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{a}:\coqdocvar{A}) (\coqdocvar{x}:\coqdocvar{T}),\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{In} (\coqdocvar{F} \coqdocvar{a}) \coqdocvar{x} \ensuremath{\rightarrow} \coqdocvar{In} \coqdocvar{IndexedUnion} \coqdocvar{x}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{IndexedIntersection} : \coqdocvar{Ensemble} \coqdocvar{T} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{indexed\_intersection\_intro}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{x}:\coqdocvar{T}),\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{a}:\coqdocvar{A}, \coqdocvar{In} (\coqdocvar{F} \coqdocvar{a}) \coqdocvar{x}) \ensuremath{\rightarrow} \coqdocvar{In} \coqdocvar{IndexedIntersection} \coqdocvar{x}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{End} \coqdocvar{IndexedFamilies}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Record} \coqdocvar{TopologicalSpace} : \coqdockw{Type} := \{\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{point\_set} : \coqdockw{Type};\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open} : \coqdocvar{Ensemble} \coqdocvar{point\_set} \ensuremath{\rightarrow} \coqdockw{Prop};\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open\_family\_union} : \coqdockw{\ensuremath{\forall}} \coqdocvar{F} : \coqdocvar{Family} \coqdocvar{point\_set},\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{S} : \coqdocvar{Ensemble} \coqdocvar{point\_set}, \coqdocvar{In} \coqdocvar{F} \coqdocvar{S} \ensuremath{\rightarrow} \coqdocvar{open} \coqdocvar{S}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{open} (\coqdocvar{FamilyUnion} \coqdocvar{F});\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open\_intersection2}: \coqdockw{\ensuremath{\forall}} \coqdocvar{U} \coqdocvar{V}:\coqdocvar{Ensemble} \coqdocvar{point\_set},\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{open} \coqdocvar{U} \ensuremath{\rightarrow} \coqdocvar{open} \coqdocvar{V} \ensuremath{\rightarrow} \coqdocvar{open} (\coqdocvar{Intersection} \coqdocvar{U} \coqdocvar{V});\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open\_full} : \coqdocvar{open} \coqdocvar{Full\_set}\coqdoceol
+\coqdocnoindent
+\}.\coqdoceol
+\coqdocemptyline
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{open\_empty}: \coqdockw{\ensuremath{\forall}} \coqdocvar{X}:\coqdocvar{TopologicalSpace},\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open} (@\coqdocvar{Empty\_set} (\coqdocvar{point\_set} \coqdocvar{X})).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{open\_union2}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}:\coqdocvar{TopologicalSpace}\}\coqdoceol
+\coqdocindent{1.00em}
+(\coqdocvar{U} \coqdocvar{V}:\coqdocvar{Ensemble} (\coqdocvar{point\_set} \coqdocvar{X})), \coqdocvar{open} \coqdocvar{U} \ensuremath{\rightarrow} \coqdocvar{open} \coqdocvar{V} \ensuremath{\rightarrow} \coqdocvar{open} (\coqdocvar{Union} \coqdocvar{U} \coqdocvar{V}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{indexed\_union\_to\_family\_union}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{A} \coqdocvar{T}:\coqdockw{Type}\}  (\coqdocvar{F}:\coqdocvar{IndexedFamily} \coqdocvar{A} \coqdocvar{T}),\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{IndexedUnion} \coqdocvar{F} = \coqdocvar{FamilyUnion} (\coqdockw{fun} \coqdocvar{u} \ensuremath{\Rightarrow} \coqdoctac{\ensuremath{\exists}} \coqdocvar{a}:\coqdocvar{A}, \coqdocvar{F} \coqdocvar{a} = \coqdocvar{u}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{open\_indexed\_union}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}:\coqdocvar{TopologicalSpace}\} \{\coqdocvar{A}:\coqdockw{Type}\}\coqdoceol
+\coqdocindent{1.00em}
+(\coqdocvar{F}:\coqdocvar{IndexedFamily} \coqdocvar{A} (\coqdocvar{point\_set} \coqdocvar{X})),\coqdoceol
+\coqdocindent{1.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{a}:\coqdocvar{A}, \coqdocvar{open} (\coqdocvar{F} \coqdocvar{a})) \ensuremath{\rightarrow} \coqdocvar{open} (\coqdocvar{IndexedUnion} \coqdocvar{F}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{open\_finite\_indexed\_intersection}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}:\coqdocvar{TopologicalSpace}\} \{\coqdocvar{A}:\coqdockw{Type}\}\coqdoceol
+\coqdocindent{2.00em}
+(\coqdocvar{F}:\coqdocvar{IndexedFamily} \coqdocvar{A} (\coqdocvar{point\_set} \coqdocvar{X})),\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{FiniteT} \coqdocvar{A} \ensuremath{\rightarrow} (\coqdockw{\ensuremath{\forall}} \coqdocvar{a}:\coqdocvar{A}, \coqdocvar{open} (\coqdocvar{F} \coqdocvar{a})) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{open} (\coqdocvar{IndexedIntersection} \coqdocvar{F}).\coqdoceol
+\coqdocemptyline
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{compact} (\coqdocvar{X}:\coqdocvar{TopologicalSpace}) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} \coqdocvar{C}:\coqdocvar{Family} (\coqdocvar{point\_set} \coqdocvar{X}),\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{U}:\coqdocvar{Ensemble} (\coqdocvar{point\_set} \coqdocvar{X}), \coqdocvar{In} \coqdocvar{C} \coqdocvar{U} \ensuremath{\rightarrow} \coqdocvar{open} \coqdocvar{U}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{FamilyUnion} \coqdocvar{C} = \coqdocvar{Full\_set} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdoctac{\ensuremath{\exists}} \coqdocvar{C'}:\coqdocvar{Family} (\coqdocvar{point\_set} \coqdocvar{X}),\coqdoceol
+\coqdocindent{3.00em}
+\coqdocvar{Finite} \coqdocvar{\_} \coqdocvar{C'} \ensuremath{\land} \coqdocvar{Included} \coqdocvar{C'} \coqdocvar{C} \ensuremath{\land}\coqdoceol
+\coqdocindent{3.00em}
+\coqdocvar{FamilyUnion} \coqdocvar{C'} = \coqdocvar{Full\_set}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{closed} \{\coqdocvar{X}:\coqdocvar{TopologicalSpace}\} (\coqdocvar{F}:\coqdocvar{Ensemble} (\coqdocvar{point\_set} \coqdocvar{X})) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{open} (\coqdocvar{Ensembles.Complement} \coqdocvar{F}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{union\_is\_finite\_strong}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{U}:\coqdockw{Type}) (\coqdocvar{A}:\coqdocvar{Ensemble} \coqdocvar{U}),\coqdoceol
+\coqdocindent{4.00em}
+\coqdocvar{Finite} \coqdocvar{U} \coqdocvar{A} \ensuremath{\rightarrow} \coqdockw{\ensuremath{\forall}} \coqdocvar{x}:\coqdocvar{U}, \coqdocvar{Finite} \coqdocvar{U} (\coqdockw{Add} \coqdocvar{A} \coqdocvar{x}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{sig\_index\_finite}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{A} \coqdocvar{B} : \coqdockw{Type}) (\coqdocvar{x} : \coqdocvar{Family} \coqdocvar{B}), (\coqdocvar{Finite} (\coqdocvar{Ensemble} \coqdocvar{B}) \coqdocvar{x}) \ensuremath{\rightarrow} \coqdockw{\ensuremath{\forall}} (\coqdocvar{f} : \{\coqdocvar{e} \ensuremath{|} \coqdocvar{In} \coqdocvar{x} \coqdocvar{e}\} \ensuremath{\rightarrow} \coqdocvar{A}), \coqdocvar{Finite} \coqdocvar{A} (\coqdockw{fun} \coqdocvar{i} \ensuremath{\Rightarrow} \coqdoctac{\ensuremath{\exists}} \coqdocvar{e}, \coqdocvar{f} \coqdocvar{e} = \coqdocvar{i}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{map\_finite}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{X} \coqdocvar{Y} : \coqdockw{Type}) (\coqdocvar{A} : \coqdocvar{Ensemble} \coqdocvar{X}) (\coqdocvar{F} : \coqdocvar{X} \ensuremath{\rightarrow} \coqdocvar{Y}), \coqdocvar{Finite} \coqdocvar{X} \coqdocvar{A} \ensuremath{\rightarrow} \coqdocvar{Finite} \coqdocvar{Y} (\coqdockw{fun} \coqdocvar{x} \ensuremath{\Rightarrow} \coqdoctac{\ensuremath{\exists}} \coqdocvar{e} : \{\coqdocvar{e} \ensuremath{|} \coqdocvar{In} \coqdocvar{A} \coqdocvar{e}\}, \coqdocvar{x} = \coqdocvar{F} (\coqdocvar{proj1\_sig} \coqdocvar{e})).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{singleton\_is\_finite}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{X} : \coqdockw{Type}) (\coqdocvar{a} : \coqdocvar{X}), \coqdocvar{Finite} \coqdocvar{X} (\coqdocvar{Singleton} \coqdocvar{a}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{prop\_finite}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{X} : \coqdockw{Type}) (\coqdocvar{A} : \coqdocvar{Ensemble} \coqdocvar{X}) (\coqdocvar{P} : \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop}), \coqdocvar{Finite} \coqdocvar{X} \coqdocvar{A} \ensuremath{\rightarrow} \coqdocvar{Finite} \coqdocvar{X} (\coqdockw{fun} \coqdocvar{x} \ensuremath{\Rightarrow} \coqdocvar{P} \coqdocvar{x} \ensuremath{\land} \coqdoctac{\ensuremath{\exists}} \coqdocvar{e} : \{\coqdocvar{e} \ensuremath{|} \coqdocvar{In} \coqdocvar{A} \coqdocvar{e}\}, \coqdocvar{x} = \coqdocvar{proj1\_sig} \coqdocvar{e}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{complement\_full\_set\_equal\_empty\_set} :\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{A} : \coqdockw{Type}), \coqdocvar{Complement} \coqdocvar{Full\_set} = (\coqdocvar{Empty\_set} : \coqdocvar{Ensemble} \coqdocvar{A}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{complement\_complement\_x\_equal\_x} :\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{A} : \coqdockw{Type}) (\coqdocvar{x} : \coqdocvar{Ensemble} \coqdocvar{A}), \coqdocvar{Complement} (\coqdocvar{Complement} \coqdocvar{x}) = \coqdocvar{x}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{compactness\_on\_indexed\_covers}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} (\coqdocvar{X}:\coqdocvar{TopologicalSpace}) (\coqdocvar{A}:\coqdockw{Type}) (\coqdocvar{C}:\coqdocvar{IndexedFamily} \coqdocvar{A} (\coqdocvar{point\_set} \coqdocvar{X})),\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{compact} \coqdocvar{X} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{a}:\coqdocvar{A}, \coqdocvar{open} (\coqdocvar{C} \coqdocvar{a})) \ensuremath{\rightarrow} \coqdocvar{IndexedUnion} \coqdocvar{C} = \coqdocvar{Full\_set} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdoctac{\ensuremath{\exists}} \coqdocvar{A'}:\coqdocvar{Ensemble} \coqdocvar{A}, \coqdocvar{Finite} \coqdocvar{\_} \coqdocvar{A'} \ensuremath{\land}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{IndexedUnion} (\coqdockw{fun} \coqdocvar{a'}:\{\coqdocvar{a'}:\coqdocvar{A} \ensuremath{|} \coqdocvar{In} \coqdocvar{A'} \coqdocvar{a'}\} \ensuremath{\Rightarrow} \coqdocvar{C} (\coqdocvar{proj1\_sig} \coqdocvar{a'})) = \coqdocvar{Full\_set}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{compact\_finite\_nonempty\_closed\_intersection}:\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} \coqdocvar{X}:\coqdocvar{TopologicalSpace}, \coqdocvar{compact} \coqdocvar{X} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{\ensuremath{\forall}} \coqdocvar{F}:\coqdocvar{Family} (\coqdocvar{point\_set} \coqdocvar{X}),\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{G}:\coqdocvar{Ensemble} (\coqdocvar{point\_set} \coqdocvar{X}), \coqdocvar{In} \coqdocvar{F} \coqdocvar{G} \ensuremath{\rightarrow} \coqdocvar{closed} \coqdocvar{G}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+(\coqdockw{\ensuremath{\forall}} \coqdocvar{F'}:\coqdocvar{Family} (\coqdocvar{point\_set} \coqdocvar{X}), \coqdocvar{Finite} \coqdocvar{\_} \coqdocvar{F'} \ensuremath{\rightarrow} \coqdocvar{Included} \coqdocvar{F'} \coqdocvar{F} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.50em}
+\coqdocvar{Inhabited} (\coqdocvar{FamilyIntersection} \coqdocvar{F'})) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{2.00em}
+\coqdocvar{Inhabited} (\coqdocvar{FamilyIntersection} \coqdocvar{F}).\coqdoceol
+\end{coqdoccode}
+\end{document}

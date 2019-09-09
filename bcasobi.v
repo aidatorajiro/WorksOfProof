@@ -1,0 +1,117 @@
+Require Import Ensembles.
+Require Import Finite_sets.
+
+Arguments In {U}.
+Arguments Included {U}.
+Arguments Singleton {U}.
+Arguments Union {U}.
+Arguments Add {U}.
+Arguments Intersection {U}.
+Arguments Couple {U}.
+Arguments Triple {U}.
+Arguments Complement {U}.
+Arguments Setminus {U}.
+Arguments Subtract {U}.
+Arguments Disjoint {U}.
+Arguments Inhabited {U}.
+Arguments Strict_Included {U}.
+Arguments Same_set {U}.
+Arguments Extensionality_Ensembles {U}.
+Arguments Empty_set {U}.
+Arguments Full_set {U}.
+
+Set Implicit Arguments.
+
+Inductive invertible {X Y:Type} (f:X->Y) : Prop :=
+  | intro_invertible: forall g:Y->X,
+  (forall x:X, g (f x) = x) -> (forall y:Y, f (g y) = y) ->
+  invertible f.
+
+Inductive FiniteT : Type -> Prop :=
+  | empty_finite: FiniteT False
+  | add_finite: forall T:Type, FiniteT T -> FiniteT (option T)
+  | bij_finite: forall (X Y:Type) (f:X->Y), FiniteT X ->
+    invertible f -> FiniteT Y.
+
+Section Families.
+
+Variable T:Type.
+Definition Family := Ensemble (Ensemble T).
+Variable F:Family.
+
+Inductive FamilyUnion: Ensemble T :=
+  | family_union_intro: forall (S:Ensemble T) (x:T),
+    In F S -> In S x -> In FamilyUnion x.
+
+Inductive FamilyIntersection: Ensemble T :=
+  | family_intersection_intro: forall x:T,
+    (forall S:Ensemble T, In F S -> In S x) ->
+    In FamilyIntersection x.
+
+End Families.
+
+Section FamiliesFact.
+
+Variable T:Type.
+
+Lemma empty_family_union: FamilyUnion (@Empty_set (Ensemble T)) =
+                          Empty_set.
+Proof.
+apply Extensionality_Ensembles.
+unfold Same_set.
+constructor.
+unfold Included.
+intros.
+destruct H.
+destruct H.
+unfold Included.
+intros.
+destruct H.
+Qed.
+
+End FamiliesFact.
+
+Section IndexedFamilies.
+
+Variable A T:Type.
+Definition IndexedFamily := A -> Ensemble T.
+Variable F:IndexedFamily.
+
+Inductive IndexedUnion : Ensemble T :=
+  | indexed_union_intro: forall (a:A) (x:T),
+    In (F a) x -> In IndexedUnion x.
+
+Inductive IndexedIntersection : Ensemble T :=
+  | indexed_intersection_intro: forall (x:T),
+    (forall a:A, In (F a) x) -> In IndexedIntersection x.
+
+End IndexedFamilies.
+
+Record TopologicalSpace : Type := {
+  point_set : Type;
+  open : Ensemble point_set -> Prop;
+  open_family_union : forall F : Family point_set,
+    (forall S : Ensemble point_set, In F S -> open S) ->
+    open (FamilyUnion F);
+  open_intersection2: forall U V:Ensemble point_set,
+    open U -> open V -> open (Intersection U V);
+  open_full : open Full_set
+}.
+
+Arguments open {t}.
+Arguments open_family_union {t}.
+Arguments open_intersection2 {t}.
+
+Inductive DHTVar : Type :=
+  | varspace : nat -> nat -> DHTVar.
+
+Theorem some_trivial_thorem : forall (v:DHTVar), exists (n: nat) (m : nat), varspace n m = v.
+intros.
+destruct v.
+exists n.
+exists n0.
+reflexivity.
+Qed.
+
+Definition DHTopen : Ensemble DHTVar -> Prop
+  := fun e => e = Empty_set /\ e = Full_set /\ exists (a : nat) (b : nat) (c : nat) (d : nat), .

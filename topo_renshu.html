@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>topo_renshu</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library topo_renshu</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Ensembles</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Finite_sets</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">ClassicalChoice</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Classical_Pred_Type</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Classical_Prop</span>.<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Set Implicit Arguments</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">invertible</span> {<span class="id" title="var">X</span> <span class="id" title="var">Y</span>:<span class="id" title="keyword">Type</span>} (<span class="id" title="var">f</span>:<span class="id" title="var">X</span>-&gt;<span class="id" title="var">Y</span>) : <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">intro_invertible</span>: <span class="id" title="keyword">forall</span> <span class="id" title="var">g</span>:<span class="id" title="var">Y</span>-&gt;<span class="id" title="var">X</span>,<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">x</span>:<span class="id" title="var">X</span>, <span class="id" title="var">g</span> (<span class="id" title="var">f</span> <span class="id" title="var">x</span>) = <span class="id" title="var">x</span>) -&gt; (<span class="id" title="keyword">forall</span> <span class="id" title="var">y</span>:<span class="id" title="var">Y</span>, <span class="id" title="var">f</span> (<span class="id" title="var">g</span> <span class="id" title="var">y</span>) = <span class="id" title="var">y</span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="var">invertible</span> <span class="id" title="var">f</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">FiniteT</span> : <span class="id" title="keyword">Type</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">empty_finite</span>: <span class="id" title="var">FiniteT</span> <span class="id" title="var">False</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">add_finite</span>: <span class="id" title="keyword">forall</span> <span class="id" title="var">T</span>:<span class="id" title="keyword">Type</span>, <span class="id" title="var">FiniteT</span> <span class="id" title="var">T</span> -&gt; <span class="id" title="var">FiniteT</span> (<span class="id" title="var">option</span> <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">bij_finite</span>: <span class="id" title="keyword">forall</span> (<span class="id" title="var">X</span> <span class="id" title="var">Y</span>:<span class="id" title="keyword">Type</span>) (<span class="id" title="var">f</span>:<span class="id" title="var">X</span>-&gt;<span class="id" title="var">Y</span>), <span class="id" title="var">FiniteT</span> <span class="id" title="var">X</span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">invertible</span> <span class="id" title="var">f</span> -&gt; <span class="id" title="var">FiniteT</span> <span class="id" title="var">Y</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">Families</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Variable</span> <span class="id" title="var">T</span>:<span class="id" title="keyword">Type</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Family</span> := <span class="id" title="var">Ensemble</span> (<span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span>).<br/>
+<span class="id" title="keyword">Variable</span> <span class="id" title="var">F</span>:<span class="id" title="var">Family</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">FamilyUnion</span>: <span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">family_union_intro</span>: <span class="id" title="keyword">forall</span> (<span class="id" title="var">S</span>:<span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span>) (<span class="id" title="var">x</span>:<span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">F</span> <span class="id" title="var">S</span> -&gt; <span class="id" title="var">In</span> <span class="id" title="var">S</span> <span class="id" title="var">x</span> -&gt; <span class="id" title="var">In</span> <span class="id" title="var">FamilyUnion</span> <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">FamilyIntersection</span>: <span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">family_intersection_intro</span>: <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span>:<span class="id" title="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">S</span>:<span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span>, <span class="id" title="var">In</span> <span class="id" title="var">F</span> <span class="id" title="var">S</span> -&gt; <span class="id" title="var">In</span> <span class="id" title="var">S</span> <span class="id" title="var">x</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">FamilyIntersection</span> <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">Families</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">FamiliesFact</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Variable</span> <span class="id" title="var">T</span>:<span class="id" title="keyword">Type</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">empty_family_union</span>: <span class="id" title="var">FamilyUnion</span> (@<span class="id" title="var">Empty_set</span> (<span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span>)) =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Empty_set</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">FamiliesFact</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">IndexedFamilies</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Variable</span> <span class="id" title="var">A</span> <span class="id" title="var">T</span>:<span class="id" title="keyword">Type</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">IndexedFamily</span> := <span class="id" title="var">A</span> -&gt; <span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span>.<br/>
+<span class="id" title="keyword">Variable</span> <span class="id" title="var">F</span>:<span class="id" title="var">IndexedFamily</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">IndexedUnion</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">indexed_union_intro</span>: <span class="id" title="keyword">forall</span> (<span class="id" title="var">a</span>:<span class="id" title="var">A</span>) (<span class="id" title="var">x</span>:<span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> (<span class="id" title="var">F</span> <span class="id" title="var">a</span>) <span class="id" title="var">x</span> -&gt; <span class="id" title="var">In</span> <span class="id" title="var">IndexedUnion</span> <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">IndexedIntersection</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">indexed_intersection_intro</span>: <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span>:<span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">a</span>:<span class="id" title="var">A</span>, <span class="id" title="var">In</span> (<span class="id" title="var">F</span> <span class="id" title="var">a</span>) <span class="id" title="var">x</span>) -&gt; <span class="id" title="var">In</span> <span class="id" title="var">IndexedIntersection</span> <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">IndexedFamilies</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <span class="id" title="var">TopologicalSpace</span> : <span class="id" title="keyword">Type</span> := {<br/>
+&nbsp;&nbsp;<span class="id" title="var">point_set</span> : <span class="id" title="keyword">Type</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="var">open</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">point_set</span> -&gt; <span class="id" title="keyword">Prop</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="var">open_family_union</span> : <span class="id" title="keyword">forall</span> <span class="id" title="var">F</span> : <span class="id" title="var">Family</span> <span class="id" title="var">point_set</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">S</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">point_set</span>, <span class="id" title="var">In</span> <span class="id" title="var">F</span> <span class="id" title="var">S</span> -&gt; <span class="id" title="var">open</span> <span class="id" title="var">S</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">open</span> (<span class="id" title="var">FamilyUnion</span> <span class="id" title="var">F</span>);<br/>
+&nbsp;&nbsp;<span class="id" title="var">open_intersection2</span>: <span class="id" title="keyword">forall</span> <span class="id" title="var">U</span> <span class="id" title="var">V</span>:<span class="id" title="var">Ensemble</span> <span class="id" title="var">point_set</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">open</span> <span class="id" title="var">U</span> -&gt; <span class="id" title="var">open</span> <span class="id" title="var">V</span> -&gt; <span class="id" title="var">open</span> (<span class="id" title="var">Intersection</span> <span class="id" title="var">U</span> <span class="id" title="var">V</span>);<br/>
+&nbsp;&nbsp;<span class="id" title="var">open_full</span> : <span class="id" title="var">open</span> <span class="id" title="var">Full_set</span><br/>
+}.<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">open_empty</span>: <span class="id" title="keyword">forall</span> <span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">open</span> (@<span class="id" title="var">Empty_set</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">open_union2</span>: <span class="id" title="keyword">forall</span> {<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>}<br/>
+&nbsp;&nbsp;(<span class="id" title="var">U</span> <span class="id" title="var">V</span>:<span class="id" title="var">Ensemble</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)), <span class="id" title="var">open</span> <span class="id" title="var">U</span> -&gt; <span class="id" title="var">open</span> <span class="id" title="var">V</span> -&gt; <span class="id" title="var">open</span> (<span class="id" title="var">Union</span> <span class="id" title="var">U</span> <span class="id" title="var">V</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">indexed_union_to_family_union</span>: <span class="id" title="keyword">forall</span> {<span class="id" title="var">A</span> <span class="id" title="var">T</span>:<span class="id" title="keyword">Type</span>}  (<span class="id" title="var">F</span>:<span class="id" title="var">IndexedFamily</span> <span class="id" title="var">A</span> <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">IndexedUnion</span> <span class="id" title="var">F</span> = <span class="id" title="var">FamilyUnion</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">u</span> =&gt; <span class="id" title="tactic">exists</span> <span class="id" title="var">a</span>:<span class="id" title="var">A</span>, <span class="id" title="var">F</span> <span class="id" title="var">a</span> = <span class="id" title="var">u</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">open_indexed_union</span>: <span class="id" title="keyword">forall</span> {<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>} {<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;(<span class="id" title="var">F</span>:<span class="id" title="var">IndexedFamily</span> <span class="id" title="var">A</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)),<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">a</span>:<span class="id" title="var">A</span>, <span class="id" title="var">open</span> (<span class="id" title="var">F</span> <span class="id" title="var">a</span>)) -&gt; <span class="id" title="var">open</span> (<span class="id" title="var">IndexedUnion</span> <span class="id" title="var">F</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">open_finite_indexed_intersection</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> {<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>} {<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">F</span>:<span class="id" title="var">IndexedFamily</span> <span class="id" title="var">A</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">FiniteT</span> <span class="id" title="var">A</span> -&gt; (<span class="id" title="keyword">forall</span> <span class="id" title="var">a</span>:<span class="id" title="var">A</span>, <span class="id" title="var">open</span> (<span class="id" title="var">F</span> <span class="id" title="var">a</span>)) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">open</span> (<span class="id" title="var">IndexedIntersection</span> <span class="id" title="var">F</span>).<br/>
+
+<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">compact</span> (<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="var">C</span>:<span class="id" title="var">Family</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">U</span>:<span class="id" title="var">Ensemble</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>), <span class="id" title="var">In</span> <span class="id" title="var">C</span> <span class="id" title="var">U</span> -&gt; <span class="id" title="var">open</span> <span class="id" title="var">U</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">FamilyUnion</span> <span class="id" title="var">C</span> = <span class="id" title="var">Full_set</span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exists</span> <span class="id" title="var">C'</span>:<span class="id" title="var">Family</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Finite</span> <span class="id" title="var">_</span> <span class="id" title="var">C'</span> /\ <span class="id" title="var">Included</span> <span class="id" title="var">C'</span> <span class="id" title="var">C</span> /\<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">FamilyUnion</span> <span class="id" title="var">C'</span> = <span class="id" title="var">Full_set</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">closed</span> {<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>} (<span class="id" title="var">F</span>:<span class="id" title="var">Ensemble</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">open</span> (<span class="id" title="var">Ensembles.Complement</span> <span class="id" title="var">F</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">union_is_finite_strong</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">U</span>:<span class="id" title="keyword">Type</span>) (<span class="id" title="var">A</span>:<span class="id" title="var">Ensemble</span> <span class="id" title="var">U</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Finite</span> <span class="id" title="var">U</span> <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">x</span>:<span class="id" title="var">U</span>, <span class="id" title="var">Finite</span> <span class="id" title="var">U</span> (<span class="id" title="keyword">Add</span> <span class="id" title="var">A</span> <span class="id" title="var">x</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">sig_index_finite</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">Family</span> <span class="id" title="var">B</span>), (<span class="id" title="var">Finite</span> (<span class="id" title="var">Ensemble</span> <span class="id" title="var">B</span>) <span class="id" title="var">x</span>) -&gt; <span class="id" title="keyword">forall</span> (<span class="id" title="var">f</span> : {<span class="id" title="var">e</span> | <span class="id" title="var">In</span> <span class="id" title="var">x</span> <span class="id" title="var">e</span>} -&gt; <span class="id" title="var">A</span>), <span class="id" title="var">Finite</span> <span class="id" title="var">A</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">i</span> =&gt; <span class="id" title="tactic">exists</span> <span class="id" title="var">e</span>, <span class="id" title="var">f</span> <span class="id" title="var">e</span> = <span class="id" title="var">i</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">map_finite</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">A</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">X</span>) (<span class="id" title="var">F</span> : <span class="id" title="var">X</span> -&gt; <span class="id" title="var">Y</span>), <span class="id" title="var">Finite</span> <span class="id" title="var">X</span> <span class="id" title="var">A</span> -&gt; <span class="id" title="var">Finite</span> <span class="id" title="var">Y</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="tactic">exists</span> <span class="id" title="var">e</span> : {<span class="id" title="var">e</span> | <span class="id" title="var">In</span> <span class="id" title="var">A</span> <span class="id" title="var">e</span>}, <span class="id" title="var">x</span> = <span class="id" title="var">F</span> (<span class="id" title="var">proj1_sig</span> <span class="id" title="var">e</span>)).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">singleton_is_finite</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">X</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">a</span> : <span class="id" title="var">X</span>), <span class="id" title="var">Finite</span> <span class="id" title="var">X</span> (<span class="id" title="var">Singleton</span> <span class="id" title="var">a</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">prop_finite</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">X</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">A</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">X</span>) (<span class="id" title="var">P</span> : <span class="id" title="var">X</span> -&gt; <span class="id" title="keyword">Prop</span>), <span class="id" title="var">Finite</span> <span class="id" title="var">X</span> <span class="id" title="var">A</span> -&gt; <span class="id" title="var">Finite</span> <span class="id" title="var">X</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> =&gt; <span class="id" title="var">P</span> <span class="id" title="var">x</span> /\ <span class="id" title="tactic">exists</span> <span class="id" title="var">e</span> : {<span class="id" title="var">e</span> | <span class="id" title="var">In</span> <span class="id" title="var">A</span> <span class="id" title="var">e</span>}, <span class="id" title="var">x</span> = <span class="id" title="var">proj1_sig</span> <span class="id" title="var">e</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">complement_full_set_equal_empty_set</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>), <span class="id" title="var">Complement</span> <span class="id" title="var">Full_set</span> = (<span class="id" title="var">Empty_set</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">A</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">complement_complement_x_equal_x</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">Ensemble</span> <span class="id" title="var">A</span>), <span class="id" title="var">Complement</span> (<span class="id" title="var">Complement</span> <span class="id" title="var">x</span>) = <span class="id" title="var">x</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">compactness_on_indexed_covers</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> (<span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>) (<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>) (<span class="id" title="var">C</span>:<span class="id" title="var">IndexedFamily</span> <span class="id" title="var">A</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>)),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">compact</span> <span class="id" title="var">X</span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">a</span>:<span class="id" title="var">A</span>, <span class="id" title="var">open</span> (<span class="id" title="var">C</span> <span class="id" title="var">a</span>)) -&gt; <span class="id" title="var">IndexedUnion</span> <span class="id" title="var">C</span> = <span class="id" title="var">Full_set</span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exists</span> <span class="id" title="var">A'</span>:<span class="id" title="var">Ensemble</span> <span class="id" title="var">A</span>, <span class="id" title="var">Finite</span> <span class="id" title="var">_</span> <span class="id" title="var">A'</span> /\<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">IndexedUnion</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">a'</span>:{<span class="id" title="var">a'</span>:<span class="id" title="var">A</span> | <span class="id" title="var">In</span> <span class="id" title="var">A'</span> <span class="id" title="var">a'</span>} =&gt; <span class="id" title="var">C</span> (<span class="id" title="var">proj1_sig</span> <span class="id" title="var">a'</span>)) = <span class="id" title="var">Full_set</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">compact_finite_nonempty_closed_intersection</span>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="var">X</span>:<span class="id" title="var">TopologicalSpace</span>, <span class="id" title="var">compact</span> <span class="id" title="var">X</span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="var">F</span>:<span class="id" title="var">Family</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">G</span>:<span class="id" title="var">Ensemble</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>), <span class="id" title="var">In</span> <span class="id" title="var">F</span> <span class="id" title="var">G</span> -&gt; <span class="id" title="var">closed</span> <span class="id" title="var">G</span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">forall</span> <span class="id" title="var">F'</span>:<span class="id" title="var">Family</span> (<span class="id" title="var">point_set</span> <span class="id" title="var">X</span>), <span class="id" title="var">Finite</span> <span class="id" title="var">_</span> <span class="id" title="var">F'</span> -&gt; <span class="id" title="var">Included</span> <span class="id" title="var">F'</span> <span class="id" title="var">F</span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Inhabited</span> (<span class="id" title="var">FamilyIntersection</span> <span class="id" title="var">F'</span>)) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Inhabited</span> (<span class="id" title="var">FamilyIntersection</span> <span class="id" title="var">F</span>).<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

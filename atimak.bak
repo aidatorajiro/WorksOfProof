@@ -1,0 +1,385 @@
+Require Import Ensembles.
+Require Import ClassicalChoice.
+Require Import Classical_Pred_Type.
+Require Import Classical_Prop.
+
+Record Ring : Type := mkRing {
+  number : Type;
+  plus : number -> number -> number;
+  mult : number -> number -> number;
+  zero : number;
+  one : number;
+  inv : number -> number;
+  plus_inv : forall n : number, plus n (inv n) = zero;
+  plus_zero : forall n : number, plus n zero = n;
+  plus_assoc : forall (a : number) (b : number) (c : number), plus (plus a b) c = plus a (plus b c);
+  plus_rev : forall (a : number) (b : number), plus a b = plus b a;
+  mult_assoc : forall (a : number) (b : number) (c : number), mult (mult a b) c = mult a (mult b c);
+  mult_dist : forall (a : number) (b : number) (c : number), mult a (plus b c) = plus (mult a b) (mult a c);
+  mult_rev : forall (a : number) (b : number), mult a b = mult b a;
+  mult_one : forall (a : number), mult a one = a;
+}.
+
+Set Implicit Arguments.
+
+Arguments plus {r}.
+Arguments mult {r}.
+Arguments zero {r}.
+Arguments one {r}.
+Arguments inv {r}.
+Arguments plus_inv {r}.
+Arguments plus_zero {r}.
+Arguments plus_assoc {r}.
+Arguments plus_rev {r}.
+Arguments mult_assoc {r}.
+Arguments mult_dist {r}.
+Arguments mult_rev {r}.
+Arguments mult_one {r}.
+
+Proposition prop_mult_zero : forall (X : Ring) (x : number X), mult x zero = zero.
+Proof.
+intros.
+assert (mult (plus zero zero) x = mult zero x).
+rewrite (plus_zero zero).
+reflexivity.
+rewrite (mult_rev) in H.
+rewrite (mult_dist) in H.
+assert (plus (plus (mult x zero) (mult x zero)) (inv (mult x zero)) = plus (mult zero x) (inv (mult zero x))).
+rewrite H.
+rewrite (mult_rev x zero).
+reflexivity.
+rewrite (plus_assoc (mult x zero) (mult x zero) (inv (mult x zero))) in H0.
+rewrite (plus_inv (mult x zero)) in H0.
+rewrite (plus_zero) in H0.
+rewrite plus_inv in H0.
+trivial.
+Qed.
+
+Proposition prop_mult_inv : forall (X : Ring) (x : number X), mult x (inv one) = inv x.
+Proof.
+intros.
+assert (H := prop_mult_zero X x).
+rewrite <- (plus_inv one) in H at 1.
+rewrite <- (plus_inv x) in H at 1.
+rewrite mult_dist in H.
+apply (f_equal (fun t => plus (inv x) t)) in H.
+rewrite (mult_one) in H.
+rewrite <- (plus_assoc) in H.
+rewrite (plus_rev (inv x) x) in H.
+rewrite plus_inv in H.
+rewrite (plus_rev) in H.
+rewrite (plus_zero) in H.
+rewrite (plus_zero) in H.
+trivial.
+Qed.
+
+Proposition prop_1_2_a1 : forall {X : Ring} (x : number X), (exists y, mult x y = one) <-> (fun z => exists a, z = mult a x) = Full_set (number X).
+Proof.
+intros.
+split.
+intros.
+apply Extensionality_Ensembles.
+unfold Same_set.
+unfold Included.
+constructor.
+intros.
+unfold In.
+apply Full_intro.
+intros.
+unfold In.
+destruct H.
+unfold In in H0.
+exists (mult x0 x1).
+rewrite (mult_assoc x0 x1 x).
+rewrite (mult_rev x1 x).
+rewrite H.
+rewrite mult_one.
+reflexivity.
+intros.
+assert ((Full_set (number X)) one).
+apply Full_intro.
+rewrite <- H in H0.
+destruct H0.
+exists x0.
+rewrite mult_rev in H0.
+rewrite H0.
+reflexivity.
+Qed.
+
+Definition principal_ideal := (fun (X : Ring) (x : number X) => (fun a => exists k : number X, a = mult k x)).
+
+Definition ideal := (fun (X : Ring) (a : Ensemble (number X)) => (forall x y, a y -> a (mult x y)) /\ Inhabited (number X) a).
+
+Definition unit := (fun (X : Ring) (a : number X) => exists b, mult a b = one).
+
+Arguments principal_ideal {X}.
+Arguments ideal {X}.
+Arguments unit {X}.
+
+Definition QuotientRingProp := (fun (X : Ring) (a : Ensemble (number X)) t => exists k : number X, t = (fun m : number X => exists l, a l /\ m = mult k l)).
+
+Definition QuotientRingNumber := (fun (X : Ring) (a : Ensemble (number X)) => {t | QuotientRingProp X a t}).
+
+Proposition quotient_plus : forall (X : Ring) (a : Ensemble (number X)) (i : ideal a) (p : number X -> number X -> number X) (q : QuotientRingNumber X a) (r : QuotientRingNumber X a),
+                                 QuotientRingProp X a (fun v => exists s t, (proj1_sig q) t /\ (proj1_sig r) s /\ v = plus t s).
+Proof.
+intros.
+destruct q.
+destruct r.
+unfold QuotientRingProp in *.
+destruct q.
+destruct q0.
+unfold proj1_sig.
+exists (p x1 x2).
+apply Extensionality_Ensembles.
+constructor.
+unfold Included.
+unfold In.
+intros.
+destruct H.
+destruct H.
+unfold ideal in i.
+destruct i.
+destruct H1.
+destruct H.
+destruct H2.
+rewrite e0 in H2.
+destruct H2.
+destruct H2.
+rewrite H4 in H3.
+Qed.
+
+Definition quotient := (fun (X : Ring) (a : Ensemble (number X)) (pi : ideal a) =>
+  let T := QuotientRingNumber X a in
+  let c := (fun
+             (p : number X -> number X -> number X)
+             (q : T)
+             (r : T)
+               => (q) : T) in
+  mkRing
+  T
+  (c plus)
+  (c mult)
+  zero
+  one
+  inv).
+
+Proposition principal_ideal_is_ideal : forall (X : Ring) (x : number X), ideal (principal_ideal x).
+Proof.
+intros.
+unfold ideal.
+constructor.
+intros.
+unfold principal_ideal.
+unfold principal_ideal in H.
+destruct H.
+rewrite H.
+exists (mult x0 x1).
+rewrite mult_assoc.
+reflexivity.
+exists x.
+exists one.
+rewrite mult_rev.
+rewrite mult_one.
+trivial.
+Qed.
+
+Proposition prop_1_2_a2 : forall (X : Ring) (a :  Ensemble (number X)) (t :  number X), ideal a -> a t -> Included (number X) (principal_ideal t) a.
+Proof.
+intros.
+unfold Included.
+intros.
+unfold In.
+unfold In in H1.
+unfold principal_ideal in H1.
+destruct H1.
+unfold ideal in H.
+destruct H.
+assert (H3 := H x0 t H0).
+rewrite <- H1 in H3.
+trivial.
+Qed.
+
+Definition field := (fun (X : Ring) => (one : number X) <> zero /\ forall x : number X, x <> zero -> unit x).
+
+Definition homomorphism := (fun (X : Ring) (Y : Ring) (f : number X -> number Y) =>
+  (forall (x : number X) (y : number X), f(plus x y) = plus (f x) (f y)) /\
+  (forall (x : number X) (y : number X), f(mult x y) = mult (f x) (f y)) /\
+  (f(one) = one)
+).
+
+Arguments homomorphism {X} {Y}.
+
+Definition injective :=  (fun (X : Type) (Y : Type) (f : X -> Y) => forall x y, (f x) = (f y) -> x = y).
+
+Proposition prop_homomorphism_zero : forall (X : Ring) (Y : Ring) (F : number X -> number Y), homomorphism F -> F zero = zero.
+Proof.
+intros.
+unfold homomorphism in H.
+destruct H.
+destruct H0.
+assert (H2 := H1).
+rewrite <- (plus_zero one) in H2.
+rewrite H in H2.
+rewrite H1 in H2.
+apply (f_equal (fun t => plus t (inv one))) in H2.
+rewrite plus_inv in H2.
+rewrite plus_rev in H2.
+rewrite <- plus_assoc in H2.
+rewrite (plus_rev (inv one) one) in H2.
+rewrite plus_inv in H2.
+rewrite plus_rev in H2.
+rewrite plus_zero in H2.
+trivial.
+Qed.
+
+Definition kernel := (fun (X : Ring) (Y : Ring) (F : number X -> number Y) => (fun t => F t = zero)).
+
+Arguments kernel {X Y}.
+
+Proposition prop_hom_inv : forall (X : Ring) (Y : Ring) (F : number X -> number Y), homomorphism F -> forall t, inv (F t) = F (inv t).
+Proof.
+intros.
+assert (HHom := H).
+unfold homomorphism in H.
+destruct H.
+destruct H0.
+assert (zero = plus (F t) (F (inv t))).
+rewrite <- H.
+rewrite plus_inv.
+rewrite prop_homomorphism_zero.
+reflexivity.
+apply HHom.
+apply (f_equal (fun v => plus v (inv (F t)))) in H2.
+rewrite plus_rev in H2.
+rewrite plus_zero in H2.
+rewrite plus_assoc in H2.
+rewrite plus_rev in H2 at 1.
+rewrite plus_assoc in H2.
+rewrite (plus_rev (inv (F t)) (F t)) in H2.
+rewrite plus_inv in H2.
+rewrite plus_zero in H2.
+trivial.
+Qed.
+
+Proposition prop_1_2_a4 : forall (X : Ring) (Y : Ring) (F : number X -> number Y), homomorphism F -> kernel F = Singleton (number X) zero -> injective F.
+Proof.
+intros.
+assert (HHom := H).
+unfold injective.
+intros.
+unfold kernel in H0.
+unfold homomorphism in H.
+destruct H.
+destruct H2.
+apply (f_equal (fun t => plus t (inv (F y)))) in H1.
+rewrite plus_inv in H1.
+rewrite (prop_hom_inv) in H1.
+rewrite <- H in H1.
+assert (plus x (inv y) = zero).
+assert ((fun t : number X => F t = zero) (plus x (inv y))).
+trivial.
+rewrite H0 in H4.
+destruct H4.
+reflexivity.
+apply (f_equal (fun v => plus v y)) in H4.
+rewrite plus_assoc in H4.
+rewrite (plus_rev (inv y) y) in H4.
+rewrite plus_inv in H4.
+rewrite (plus_rev zero y) in H4.
+rewrite plus_zero in H4.
+rewrite plus_zero in H4.
+trivial.
+trivial.
+Qed.
+
+Definition ring_nonzero := (fun X => exists x : number X, x <> zero).
+Definition ring_zero := (fun X => forall x : number X, x = zero).
+
+Proposition prop_1_2_1 : forall (X : Ring), field X -> forall (a :  Ensemble (number X)), ideal a -> (a = Singleton (number X) zero \/ a = Full_set (number X)).
+Proof.
+intros.
+unfold ideal in H0.
+unfold field in H.
+destruct H.
+unfold unit in H1.
+case (classic (a = Singleton (number X) zero)).
+intros.
+left.
+trivial.
+intros.
+right.
+destruct H0.
+destruct H3.
+Admitted.
+
+Proposition prop_1_2_2 :  forall (X : Ring), (forall a : Ensemble(number X), ideal a -> (a = Singleton (number X) zero \/ a = Full_set (number X))) -> forall (Y : Ring) (F : number X -> number Y), (exists (t : number Y), t <> zero) -> homomorphism F -> injective F.
+Proof.
+intros.
+assert (HomF := H1).
+destruct H1.
+destruct H2.
+destruct H0.
+assert (H5 := H (kernel F)).
+assert (ideal (kernel F)).
+unfold ideal.
+constructor.
+intros.
+unfold kernel.
+rewrite H2.
+rewrite H4.
+apply prop_mult_zero.
+exists zero.
+apply prop_homomorphism_zero.
+apply HomF.
+assert (H6 := H5 H4).
+case H6.
+intro.
+apply (prop_1_2_a4).
+trivial.
+trivial.
+unfold injective.
+unfold kernel.
+intros.
+assert (Full_set (number X) one).
+apply Full_intro.
+rewrite <- H7 in H9.
+rewrite H3 in H9.
+rewrite <- (mult_one x) in H0.
+rewrite H9 in H0.
+rewrite prop_mult_zero in H0.
+apply False_ind.
+apply H0.
+reflexivity.
+Qed.
+
+Proposition prop_one_eq_zero : forall (X : Ring), (one : number X) = zero -> ring_zero X.
+Proof.
+intros.
+intro.
+assert (mult x one = mult x one).
+reflexivity.
+rewrite H in H0 at 2.
+rewrite mult_one in H0.
+rewrite prop_mult_zero in H0.
+trivial.
+Qed.
+
+Proposition prop_ring_zero_nonzero_contradiction : forall (X : Ring), ring_nonzero X -> ring_zero X -> False.
+Proof.
+intros.
+destruct H.
+assert (H1 := H0 x).
+apply (H H1).
+Qed.
+
+Proposition prop_1_2_3 : forall (X : Ring), ring_nonzero X -> (forall (Y : Ring) (F : number X -> number Y), (ring_nonzero Y) -> homomorphism F -> injective F) -> field X.
+Proof.
+intros.
+constructor.
+intro.
+assert (H2 := prop_one_eq_zero X H1).
+apply (prop_ring_zero_nonzero_contradiction H H2).
+intros.
+unfold unit.
+Qed.

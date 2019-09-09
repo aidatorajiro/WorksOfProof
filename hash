@@ -1,0 +1,13 @@
+Require Import Coq.Logic.Classical_Pred_Type.
+
+Notation "[ a ] < [ b ]" := (forall (F : a -> b), exists (y : b), forall (x : a), F x <> y).
+Notation "[ a ] > [ b ]" := ([b] < [a]).
+Notation "[ a ] = [ b ]" := (~([a] < [b]) /\ ~([a] > [b])).
+
+Definition isHash (X : Type) (Y : Type) (f : X -> Y) := forall (a : X) (b : X), f a = f b -> a = b.
+
+Proposition prop1 : forall (X: Type) (Y: Type), ~([X] > [Y]) -> exists (f: X -> Y), isHash X Y f.
+Proof.
+intros.
+assert (exists (F : X -> Y), forall (y : Y), exists (x : X), F x = y).
+assert (H0 := not_all_not_ex H).
