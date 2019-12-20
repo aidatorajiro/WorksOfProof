@@ -35,23 +35,24 @@ apply H1.
 trivial.
 Qed.
 
-Definition trnasfinite_induction : forall
+Definition wellord (A : Type) (R : relation A) :=
+  forall e : Ensemble A, (exists a, e a) ->
+  (exists x, e x /\ forall y, e y -> R x y).
+
+Definition wellord_ens (A : Type) (R : relation A) (E : Ensemble A) :=
+  forall e : Ensemble A, Included _ e E -> (exists a, e a) ->
+  (exists x, e x /\ forall y, e y -> R x y).
+
+Definition transfinite_induction : forall
   (A : Type)
   (R : relation A)
-  (Ord : order A R)
-  (conn : forall x y, R x y \/ R y x)
-  (well : forall e : Ensemble A, (exists a, e a) ->
-    (exists x, e x /\ forall y, e y -> R x y))
+  (anti : antisymmetric A R)
+  (well : wellord A R)
   (P : A -> Prop),
   (forall (a : A), (forall (b : A), (R b a /\ b <> a) -> P b) -> P a)
   -> (forall c : A, P(c)).
 Proof.
 intros.
-assert (refl := ord_refl A R Ord).
-assert (trans := ord_trans A R Ord).
-assert (anti := ord_antisym A R Ord).
-unfold reflexive in refl.
-unfold transitive in trans.
 unfold antisymmetric in anti.
 assert (~ (exists t, ~(P t))).
 intro.
@@ -81,12 +82,21 @@ apply NNPP.
 apply H1.
 Qed.
 
+Definition connex (A : Type) (R : relation A) (sub : Ensemble A) :=
+  (forall x y : A, sub x -> sub y -> R x y \/ R y x).
+
+Definition Big (A : Type) (R : relation A) (f : Ensemble A -> A) :=
+  (fun s => exists sub : Ensemble A,
+    wellord_ens A R sub /\
+    (forall x, sub x -> x = f (fun t => sub t /\ R t x /\ t <> x)) /\
+    sub s).
+
 Definition zorn : forall
   (A : Type)
   (R : relation A)
   (Ord : order A R),
     (forall sub : Ensemble A,
-      ((forall x y, sub x -> sub y -> R x y \/ R y x) ->
+      (connex A R sub ->
        (exists x, forall y, sub y -> R y x)))
     -> exists x, ~ (exists y, R x y /\ x <> y).
 intro.
@@ -102,6 +112,7 @@ clear Ord.
 intro.
 
 (* proof of inhabited A *)
+unfold connex in H.
 assert (exists x : A, forall y : A, False -> R y x).
 apply H.
 intros.
@@ -127,7 +138,7 @@ rename H1 into Hex.
 
 (* find some excluded and larger element for all subsets *)
 assert (forall sub : Ensemble A,
-  (forall x y : A, sub x -> sub y -> R x y \/ R y x) ->
+  connex A R sub ->
   exists g : A, forall z : A, sub z -> R z g /\ z <> g).
 intros.
 assert (H1 := Hsub sub H).
@@ -154,7 +165,7 @@ clear Hsub.
 
 (* apply axiom of choice *)
 assert (exists f : (Ensemble A)->A, (forall sub : Ensemble A,
-  (forall x y : A, sub x -> sub y -> R x y \/ R y x) ->
+  connex A R sub ->
   forall z : A, sub z -> R z (f sub) /\ z <> (f sub))).
 apply (choice_cond (Ensemble A) A (fun (sub : Ensemble A) (x : A) =>
   forall z : A, sub z -> R z x /\ z <> x)).
@@ -168,16 +179,102 @@ destruct H.
 rename H into Hfun.
 rename x into f.
 clear Hgre.
+clear Hex.
 
-(* create an impossible ensemble *)
-assert (exists e : Ensemble A -> A, forall w : Ensemble A, e w =
-  f (fun a : A => exists v, Included _ v w /\ v <> w /\ a = e v)).
+(* create some big ensemble, and proof that
+   both [Big (f Big)] and [~ Big (f Big)]
+   leads to a contradiction *)
 
+(* First, prive Big is connex. *)
+assert (connex A R (Big A R f)).
+unfold Big.
+unfold connex.
+unfold wellord_ens.
+unfold Included.
+unfold In.
+intros.
+destruct H.
+destruct H.
+destruct H1.
+destruct H0.
+destruct H0.
+destruct H3.
+rename x0 into sub1.
+rename x1 into sub2.
+rename H into Hw1.
+rename H0 into Hw2.
+rename H1 into Hf1.
+rename H3 into Hf2.
+rename H2 into Hi1.
+rename H4 into Hi2.
 
+assert (exists m, sub1 m
+  /\ forall y : A, sub1 y -> R m y).
+assert (H := Hw1 sub1).
+apply H.
+intros.
+trivial.
+exists x.
+trivial.
+destruct H.
+destruct H.
+rename x0 into min1.
+rename H into Hmin11.
+rename H0 into Hmin12.
 
+assert (exists m, sub2 m
+  /\ forall y : A, sub2 y -> R m y).
+assert (H := Hw2 sub2).
+apply H.
+intros.
+trivial.
+exists y.
+trivial.
+destruct H.
+destruct H.
+rename x0 into min2.
+rename H into Hmin21.
+rename H0 into Hmin22.
 
+assert (Hfm1 := Hf1 min1 Hmin11).
+assert (Hfm2 := Hf2 min2 Hmin21).
+assert (min1 = min2).
+rewrite Hfm2.
+rewrite Hfm1.
+apply f_equal.
+apply Extensionality_Ensembles.
+split.
 
+intro.
+intro.
+destruct H.
+destruct H0.
+apply False_ind.
+apply H1.
+apply anti.
+trivial.
+apply Hmin12.
+trivial.
 
+intro.
+intro.
+destruct H.
+destruct H0.
+apply False_ind.
+apply H1.
+apply anti.
+trivial.
+apply Hmin22.
+trivial.
+
+clear Hfm1 Hfm2.
+
+case (classic (R x y)).
+intro.
+left.
+trivial.
+intro.
+right.
 
 
 
