@@ -35,6 +35,11 @@ apply H1.
 trivial.
 Qed.
 
+(* connexity *)
+Definition connex (A : Type) (R : relation A) (sub : Ensemble A) :=
+  (forall x y : A, sub x -> sub y -> R x y \/ R y x).
+
+(* every nonempty subset has least element *)
 Definition wellord (A : Type) (R : relation A) :=
   forall e : Ensemble A, (exists a, e a) ->
   (exists x, e x /\ forall y, e y -> R x y).
@@ -82,11 +87,9 @@ apply NNPP.
 apply H1.
 Qed.
 
-Definition connex (A : Type) (R : relation A) (sub : Ensemble A) :=
-  (forall x y : A, sub x -> sub y -> R x y \/ R y x).
-
 Definition Big (A : Type) (R : relation A) (f : Ensemble A -> A) :=
   (fun s => exists sub : Ensemble A,
+    connex A R sub /\
     wellord_ens A R sub /\
     (forall x, sub x -> x = f (fun t => sub t /\ R t x /\ t <> x)) /\
     sub s).
@@ -183,9 +186,9 @@ clear Hex.
 
 (* create some big ensemble, and proof that
    both [Big (f Big)] and [~ Big (f Big)]
-   leads to a contradiction *)
+   lead to a contradiction *)
 
-(* First, prive Big is connex. *)
+(* First, prove Big is connex. *)
 assert (connex A R (Big A R f)).
 unfold Big.
 unfold connex.
@@ -196,17 +199,21 @@ intros.
 destruct H.
 destruct H.
 destruct H1.
+destruct H2.
 destruct H0.
 destruct H0.
-destruct H3.
+destruct H4.
+destruct H5.
 rename x0 into sub1.
 rename x1 into sub2.
-rename H into Hw1.
-rename H0 into Hw2.
-rename H1 into Hf1.
-rename H3 into Hf2.
-rename H2 into Hi1.
-rename H4 into Hi2.
+rename H into Hcon1.
+rename H1 into Hw1.
+rename H0 into Hcon2.
+rename H4 into Hw2.
+rename H2 into Hf1.
+rename H5 into Hf2.
+rename H3 into Hi1.
+rename H6 into Hi2.
 
 assert (exists m, sub1 m
   /\ forall y : A, sub1 y -> R m y).
@@ -269,12 +276,19 @@ trivial.
 
 clear Hfm1 Hfm2.
 
+rewrite <- H in Hmin22.
+
+assert (H0 := Hmin12 x Hi1).
+
+assert (H1 := Hmin22 y Hi2).
+
 case (classic (R x y)).
 intro.
 left.
 trivial.
 intro.
 right.
+
 
 
 
