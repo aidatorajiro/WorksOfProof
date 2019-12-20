@@ -35,6 +35,52 @@ apply H1.
 trivial.
 Qed.
 
+Definition trnasfinite_induction : forall
+  (A : Type)
+  (R : relation A)
+  (Ord : order A R)
+  (conn : forall x y, R x y \/ R y x)
+  (well : forall e : Ensemble A, (exists a, e a) ->
+    (exists x, e x /\ forall y, e y -> R x y))
+  (P : A -> Prop),
+  (forall (a : A), (forall (b : A), (R b a /\ b <> a) -> P b) -> P a)
+  -> (forall c : A, P(c)).
+Proof.
+intros.
+assert (refl := ord_refl A R Ord).
+assert (trans := ord_trans A R Ord).
+assert (anti := ord_antisym A R Ord).
+unfold reflexive in refl.
+unfold transitive in trans.
+unfold antisymmetric in anti.
+assert (~ (exists t, ~(P t))).
+intro.
+destruct H0.
+rename x into t.
+assert (well0 := well (fun x => ~(P x))).
+simpl in well0.
+assert (exists x : A, ~ P x /\ (forall y : A, ~ P y -> R x y)).
+apply well0.
+exists t.
+trivial.
+destruct H1.
+destruct H1.
+apply H1.
+apply H.
+intros.
+destruct H3.
+apply NNPP.
+intro.
+assert (H6 := H2 b H5).
+apply H4.
+apply anti.
+trivial.
+trivial.
+assert (H1 := not_ex_all_not _ _ H0).
+apply NNPP.
+apply H1.
+Qed.
+
 Definition zorn : forall
   (A : Type)
   (R : relation A)
@@ -52,6 +98,7 @@ assert (anti := ord_antisym A R Ord).
 unfold reflexive in refl.
 unfold transitive in trans.
 unfold antisymmetric in anti.
+clear Ord.
 intro.
 
 (* proof of inhabited A *)
@@ -122,10 +169,12 @@ rename H into Hfun.
 rename x into f.
 clear Hgre.
 
-
 (* create an impossible ensemble *)
 assert (exists e : Ensemble A -> A, forall w : Ensemble A, e w =
-  f (fun a : A => exists v, RE v w /\ v <> w /\ a = e v)).
+  f (fun a : A => exists v, Included _ v w /\ v <> w /\ a = e v)).
+
+
+
 
 
 
