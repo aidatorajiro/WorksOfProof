@@ -215,6 +215,7 @@ rename H5 into Hf2.
 rename H3 into Hi1.
 rename H6 into Hi2.
 
+(*
 assert (exists m, sub1 m
   /\ forall y : A, sub1 y -> R m y).
 assert (H := Hw1 sub1).
@@ -275,20 +276,25 @@ apply Hmin22.
 trivial.
 
 clear Hfm1 Hfm2.
+rename H into Hsame.
+rewrite <- Hsame in Hmin22.
+assert (Hs1 := Hmin12 x Hi1).
+assert (Hs2 := Hmin22 y Hi2).
+*)
 
-rewrite <- H in Hmin22.
-
-assert (H0 := Hmin12 x Hi1).
-
-assert (H1 := Hmin22 y Hi2).
-
-case (classic (R x y)).
+case (classic (sub1 y)).
 intro.
-left.
-trivial.
+apply (Hcon1 _ _ Hi1 H).
 intro.
-right.
+rename H into Hnot.
 
+assert (sub2 x).
 
+assert (
+  let sub := (fun t => sub1 t /\ R t x)
+  in forall z : A, sub z -> R z (f sub) /\ z <> f sub).
+apply Hfun.
+intro.
+split.
 
 
