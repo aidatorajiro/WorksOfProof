@@ -113,10 +113,92 @@ Definition small_combine : forall
   (bound : StrictUpperBoundFunc A R f)
   (sub1 : Ensemble A)
   (sub2 : Ensemble A)
+  (noteq : sub1 <> sub2)
   (Hsub1 : Small A R f sub1)
   (Hsub2 : Small A R f sub2),
     (Included _ sub1 sub2 /\ exists x, sub1 = Seg A R sub2 x) \/ 
     (Included _ sub2 sub1 /\ exists x, sub2 = Seg A R sub1 x).
+Proof.
+intros.
+unfold Seg.
+unfold StrictUpperBoundFunc in bound.
+assert (refl := ord_refl A R Ord).
+assert (trans := ord_trans A R Ord).
+assert (anti := ord_antisym A R Ord).
+unfold reflexive in refl.
+unfold transitive in trans.
+unfold antisymmetric in anti.
+destruct Hsub1.
+destruct H0.
+destruct Hsub2.
+destruct H3.
+unfold connex in H, H2.
+unfold wellord_ens in H0, H3.
+rename H into Hcon1.
+rename H0 into Hweo1.
+rename H1 into Hboa1.
+rename H2 into Hcon2.
+rename H3 into Hweo2.
+rename H4 into Hboa2.
+assert (Hbob1 := bound _ Hcon1).
+assert (Hbob2 := bound _ Hcon2).
+
+case (classic (Included A sub1 sub2)).
+intro.
+
+left.
+split.
+trivial.
+unfold Included in *.
+unfold In in *.
+assert (let e := (fun t => (~ sub1 t) /\ sub2 t)
+  in exists x : A, e x /\
+  (forall y : A, e y -> R x y)).
+apply Hweo2.
+intros.
+destruct H0.
+trivial.
+apply NNPP.
+intro.
+assert (H1 := not_ex_all_not _ _ H0).
+simpl in H1.
+assert (sub1 = sub2).
+apply Extensionality_Ensembles.
+split.
+intro.
+intro.
+apply H.
+trivial.
+intro.
+intro.
+assert (H3 := not_and_or _ _ (H1 x)).
+case H3.
+intro.
+apply NNPP.
+trivial.
+intro.
+contradiction.
+contradiction.
+
+simpl in H0.
+destruct H0.
+destruct H0.
+destruct H0.
+
+rename x into rem.
+rename H0 into Hrem0.
+rename H2 into Hrem2.
+rename H1 into Hrem1.
+
+assert (forall x y,
+  sub1 x ->
+  ~ sub1 y ->
+  sub2 y ->
+  R x y).
+intros.
+assert (H3 := H _ H0).
+assert (R x rem).
+
 Admitted.
 
 Definition small_big : forall
@@ -167,6 +249,7 @@ Definition zorn : forall
       (connex A R sub ->
        (exists x, forall y, sub y -> R y x)))
     -> exists x, ~ (exists y, R x y /\ x <> y).
+Proof.
 intro.
 intro.
 intro.
@@ -427,143 +510,3 @@ assert (H0 := Hdec _ H).
 destruct H0.
 contradiction.
 Qed.
-
-
-(*
-assert (connex A R (Big A R f)).
-unfold Big.
-unfold connex.
-unfold wellord_ens.
-unfold Included.
-unfold In.
-intros.
-destruct H.
-destruct H.
-destruct H1.
-destruct H2.
-destruct H0.
-destruct H0.
-destruct H4.
-destruct H5.
-rename x0 into sub1.
-rename x1 into sub2.
-rename H into Hcon1.
-rename H1 into Hw1.
-rename H0 into Hcon2.
-rename H4 into Hw2.
-rename H2 into Hf1.
-rename H5 into Hf2.
-rename H3 into Hi1.
-rename H6 into Hi2.
-
-
-assert (exists m, sub1 m
-  /\ forall y : A, sub1 y -> R m y).
-assert (H := Hw1 sub1).
-apply H.
-intros.
-trivial.
-exists x.
-trivial.
-destruct H.
-destruct H.
-rename x0 into min1.
-rename H into Hmin11.
-rename H0 into Hmin12.
-
-assert (exists m, sub2 m
-  /\ forall y : A, sub2 y -> R m y).
-assert (H := Hw2 sub2).
-apply H.
-intros.
-trivial.
-exists y.
-trivial.
-destruct H.
-destruct H.
-rename x0 into min2.
-rename H into Hmin21.
-rename H0 into Hmin22.
-
-assert (Hfm1 := Hf1 min1 Hmin11).
-assert (Hfm2 := Hf2 min2 Hmin21).
-assert (min1 = min2).
-rewrite Hfm2.
-rewrite Hfm1.
-apply f_equal.
-apply Extensionality_Ensembles.
-split.
-
-intro.
-intro.
-destruct H.
-destruct H0.
-apply False_ind.
-apply H1.
-apply anti.
-trivial.
-apply Hmin12.
-trivial.
-
-intro.
-intro.
-destruct H.
-destruct H0.
-apply False_ind.
-apply H1.
-apply anti.
-trivial.
-apply Hmin22.
-trivial.
-
-clear Hfm1 Hfm2.
-rename H into Hsame.
-rewrite <- Hsame in Hmin22.
-assert (Hs1 := Hmin12 x Hi1).
-assert (Hs2 := Hmin22 y Hi2).
-
-case (classic (sub1 y)).
-intro.
-apply (Hcon1 _ _ Hi1 H).
-intro.
-rename H into Hnot.
-
-
-
-assert (
-  let e := (fun t => (~ sub1 t) /\ sub2 t)
-  in exists x : A, e x /\ (forall y : A, e y -> R x y)).
-apply Hw2.
-intros.
-destruct H.
-trivial.
-exists y.
-split.
-trivial.
-trivial.
-destruct H.
-destruct H.
-destruct H.
-rename x0 into rem.
-rename H into Hrem1.
-rename H1 into Hrem2.
-rename H0 into Hrem3.
-
-assert (Included _ (fun t : A => sub1 t /\ R t rem /\ t <> rem) sub2).
-intro.
-unfold In.
-intro.
-destruct H.
-destruct H0.
-apply NNPP.
-intro.
-
-
-assert (
-  let sub := (fun t => sub1 t /\ R t x)
-  in forall z : A, sub z -> R z (f sub) /\ z <> f sub).
-apply Hfun.
-intro.
-split.
-
-*)

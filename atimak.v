@@ -15,7 +15,7 @@ Record Ring : Type := mkRing {
   in_mult: forall a b, number a -> number b -> number (mult a b);
   in_zero: number (zero);
   in_one: number (one);
-  in_inv: forall a, number (inv a);
+  in_inv: forall a, number a -> number (inv a);
   plus_inv : forall n : T, number n
     -> plus n (inv n) = zero;
   plus_zero : forall n : T, number n
@@ -74,6 +74,10 @@ apply in_mult.
 trivial.
 apply in_zero.
 apply in_inv.
+apply in_mult.
+trivial.
+trivial.
+apply in_zero.
 trivial.
 apply in_zero.
 apply in_zero.
@@ -104,54 +108,63 @@ rewrite (plus_zero) in H.
 rewrite (plus_zero) in H.
 trivial.
 apply in_inv.
+trivial.
 apply in_mult.
 trivial.
 apply in_inv.
+apply in_one.
 apply in_zero.
 apply in_mult.
 trivial.
 apply in_inv.
+apply in_one.
 trivial.
 apply in_inv.
 trivial.
+trivial.
 apply in_inv.
+trivial.
 trivial.
 apply in_mult.
 trivial.
 apply in_inv.
+apply in_one.
 trivial.
 trivial.
 trivial.
 apply in_one.
 apply in_inv.
+apply in_one.
 trivial.
 apply in_one.
 Qed.
 
-(*
-Definition principal_ideal := (fun (X : Ring) (x : T) (P : number X x) =>
+Definition principal_ideal := (fun (X : Ring) (x : T) =>
     (fun a => exists k : T, number X k /\ a = mult X k x)).
 
-Definition ideal := (fun (X : Ring) (a : Ensemble T) (P : Included _ a (number X)) =>
-       (forall x y, a x -> a y -> a (plus X x y))
-    /\ (forall x y, a y -> a (mult X x y))
-    /\ Inhabited _ a).
-*)
-
-Definition principal_ideal := (fun (X : Ring) (x : T) (P : number X x) =>
-    (fun a => exists k : T, number X k /\ a = mult X k x)).
-
-Definition ideal := (fun (X : Ring) (a : Ensemble T) (P : Included _ a (number X)) =>
+Definition ideal := (fun (X : Ring) (a : Ensemble T) (Pinc : Included _ a (number X)) =>
        (forall x y, a x        -> a y -> a (plus X x y))
     /\ (forall x y, number X x -> a y -> a (mult X x y))
     /\ Inhabited _ a).
 
-Definition unit := (fun (X : Ring) (a : T) => exists b, mult X a b = one X).
+Definition unit := (fun (X : Ring) (a : T) => exists b, number X b /\ mult X a b = one X).
 
-Definition injective := (fun (X : Type) (Y : Type) (F : X -> Y) => forall x y, F x = F y -> x = y).
+Definition zerodiv := (fun (X : Ring) (a : T) => exists b, b <> zero X /\ mult X a b = zero X).
 
-Proposition principal_ideal_included : forall (X : Ring) x (P : number X x),
-    Included _ (principal_ideal X x P) (number X).
+Definition integral_domain := (fun (X : Ring) => forall (a : T), number X a -> a <> zero X -> ~ (zerodiv X a)).
+
+Fixpoint pow (X : Ring) (a : T) (n : nat) :=
+  match n with
+    | 0 => one X
+    | S m => mult X (pow X a m) a
+  end.
+
+Definition nilpotent := (fun (X : Ring) (x : T) => exists (n : nat), pow X x n = zero X).
+
+(*Definition injective := (fun (X : Type) (Y : Type) (F : X -> Y) => forall x y, F x = F y -> x = y).*)
+
+Proposition principal_ideal_num : forall (X : Ring) x (P : number X x),
+    Included _ (principal_ideal X x) (number X).
 Proof.
 intros.
 intro.
@@ -167,7 +180,7 @@ trivial.
 Qed.
 
 Proposition principal_ideal_is_ideal : forall (X : Ring) x (P : number X x),
-  ideal X (principal_ideal X x P) (principal_ideal_included X x P).
+  ideal X (principal_ideal X x) (principal_ideal_num X x P).
 Proof.
 intro.
 intro.
@@ -233,9 +246,10 @@ apply in_one.
 trivial.
 Qed.
 
-Proposition unit_principal_ideal_full_set : forall {X : Ring} (x : number X), (exists y, mult x y = one) <-> (principal_ideal x) = Full_set (number X).
+Proposition unit_principal_ideal_full_set : forall (X : Ring) (x : T) (P : number X x), (unit X x) <-> (principal_ideal X x) = number X.
 Proof.
 intros.
+unfold principal_ideal.
 split.
 intros.
 apply Extensionality_Ensembles.
@@ -243,75 +257,128 @@ unfold Same_set.
 unfold Included.
 constructor.
 intros.
+destruct H0.
+destruct H0.
+rewrite H1.
+apply in_mult. trivial. trivial.
 unfold In.
-apply Full_intro.
 intros.
-unfold In.
 destruct H.
-unfold In in H0.
-exists (mult x0 x1).
-rewrite (mult_assoc x0 x1 x).
-rewrite (mult_rev x1 x).
-rewrite H.
+destruct H.
+exists (mult X x0 x1).
+split.
+apply in_mult. trivial. trivial.
+rewrite (mult_assoc X x0 x1 x).
+rewrite (mult_rev X x1 x).
+rewrite H1.
 rewrite mult_one.
 reflexivity.
+trivial.
+trivial.
+trivial.
+trivial.
+trivial.
+trivial.
 intros.
-assert ((Full_set (number X)) one).
-apply Full_intro.
+unfold unit.
+assert (number X (one X)).
+apply in_one.
 rewrite <- H in H0.
 destruct H0.
+destruct H0.
 exists x0.
-rewrite mult_rev in H0.
-rewrite H0.
-reflexivity.
+split.
+trivial.
+rewrite H1.
+rewrite (mult_rev X _ _).
+trivial.
+trivial.
+trivial.
 Qed.
 
-Proposition principal_ideal_included : forall (X : Ring) (a :  Ensemble (number X)) (t :  number X), ideal a -> a t -> Included (number X) (principal_ideal t) a.
+Proposition principal_ideal_included : forall (X : Ring)
+  (a : Ensemble T) (t : T) (Pinc : Included _ a (number X)),
+  ideal X a Pinc -> number X t -> a t -> Included _ (principal_ideal X t) a.
 Proof.
 intros.
 unfold Included.
 intros.
 unfold In.
-unfold In in H1.
-unfold principal_ideal in H1.
-destruct H1.
+unfold In in H2.
+unfold principal_ideal in H2.
+destruct H2.
 unfold ideal in H.
 destruct H.
+destruct H3.
 destruct H2.
-assert (H4 := H2 x0 t H0).
-rewrite <- H1 in H4.
+rewrite H5.
+apply H3.
+trivial.
 trivial.
 Qed.
 
-Definition field := (fun (X : Ring) => (one : number X) <> zero /\ forall x : number X, x <> zero -> unit x).
+Definition field := (fun (X : Ring) => one X <> zero X
+  /\ forall x : T, number X x -> x <> zero X -> unit X x).
 
-Definition homomorphism := (fun (X : Ring) (Y : Ring) (f : number X -> number Y) =>
-  (forall (x : number X) (y : number X), f(plus x y) = plus (f x) (f y)) /\
-  (forall (x : number X) (y : number X), f(mult x y) = mult (f x) (f y)) /\
-  (f(one) = one)
+Definition homomorphism := (fun (X : Ring) (Y : Ring) (f : T -> T) =>
+  (forall x, number X x -> number Y (f x)) /\
+  (forall x y, number X x -> number X y -> f(plus X x y) = plus Y (f x) (f y)) /\
+  (forall x y, number X x -> number X y -> f(mult X x y) = mult Y (f x) (f y)) /\
+  (f(one X) = one Y)
 ).
 
-Arguments homomorphism {X} {Y}.
-
-Proposition prop_homomorphism_zero : forall (X : Ring) (Y : Ring) (F : number X -> number Y), homomorphism F -> F zero = zero.
+Proposition prop_homomorphism_zero : forall (X : Ring) (Y : Ring) (F : T -> T),
+  homomorphism X Y F -> F (zero X) = (zero Y).
 Proof.
 intros.
 unfold homomorphism in H.
 destruct H.
 destruct H0.
+destruct H1.
+rename H into Hin.
+rename H0 into H.
+rename H1 into H0.
+rename H2 into H1.
 assert (H2 := H1).
-rewrite <- (plus_zero one) in H2.
+rewrite <- (plus_zero X (one X)) in H2.
 rewrite H in H2.
 rewrite H1 in H2.
-apply (f_equal (fun t => plus t (inv one))) in H2.
+apply (f_equal (fun t => plus Y t (inv Y (one Y)))) in H2.
 rewrite plus_inv in H2.
 rewrite plus_rev in H2.
 rewrite <- plus_assoc in H2.
-rewrite (plus_rev (inv one) one) in H2.
+rewrite (plus_rev Y (inv Y (one Y)) (one Y)) in H2.
 rewrite plus_inv in H2.
 rewrite plus_rev in H2.
 rewrite plus_zero in H2.
-trivial.
+apply H2.
+rewrite plus_zero in H2.
+rewrite H2.
+apply in_zero.
+apply Hin.
+apply in_zero.
+apply in_zero.
+apply Hin.
+apply in_zero.
+apply in_one.
+apply in_inv.
+apply in_one.
+apply in_one.
+apply in_inv.
+apply in_one.
+apply in_one.
+apply Hin.
+apply in_zero.
+apply in_plus.
+apply in_one.
+apply Hin.
+apply in_zero.
+apply in_inv.
+apply in_one.
+apply in_one.
+apply in_one.
+apply in_zero.
+apply in_one.
 Qed.
 
 Definition kernel := (fun (X : Ring) (Y : Ring) (F : number X -> number Y) => (fun t => F t = zero)).
